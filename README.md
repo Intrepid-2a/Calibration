@@ -2,7 +2,7 @@
 
 This repo provides two tasks to adjust the stimuli to the participant:
 
-1. Color Calibration
+## 1. Color Calibration
 
 This task should be done first, as the results are used for the second task.
 
@@ -15,4 +15,4 @@ However, if to the participant, the dots are not indistinguishable from the back
 
 Press `space` to finish colour calibration and write the values to `..\data\color\XXX_col_cal_#.txt` where XXX is the participant ID, and # is the number of calibration attempts. The highest numbered calibration will be used by other tasks.
 
-2. Blind Spot Mapping
+## 2. Blind Spot Mapping
