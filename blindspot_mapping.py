@@ -127,7 +127,7 @@ def doBlindSpotMapping(ID=None):
         cfg['hw']['win'].flip()
 
         while 1:
-            k = event.getKeys(['up', 'down', 'left', 'right', 'q', 'w', 'a', 's', 'space', 'escape'])
+            k = event.getKeys(['up', 'down', 'left', 'right', 'q', 'w', 'a', 's', 'space', 'escape', '0'])
 
             if k:
                 if 'escape' in k:
@@ -136,6 +136,11 @@ def doBlindSpotMapping(ID=None):
 
                 if 'space' in k:
                     break
+
+                if '0' in k:
+                    cfg['hw']['tracker'].stopcollecting() # do we even have to stop/start collecting?
+                    cfg['hw']['tracker'].calibrate()
+                    cfg['hw']['tracker'].startcollecting()
 
             if cfg['hw']['tracker'].gazeInFixationWindow():
 
