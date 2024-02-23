@@ -11,7 +11,7 @@ Authors: Clement Abbatecola
 
 import sys, os
 sys.path.append(os.path.join('..', 'EyeTracking'))
-from System import localizeSetup, EyeTracker
+from EyeTracking import localizeSetup, EyeTracker
 
 
 from psychopy import core, visual, gui, data, event, monitors

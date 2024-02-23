@@ -9,9 +9,9 @@ Authors: Clement Abbatecola, Belén María Montabes de la Cruz, Marius 't Hart
         0.1 # 2022/10/06
 """
 
-iimport sys, os
+import sys, os
 sys.path.append(os.path.join('..', 'EyeTracking'))
-from System import localizeSetup, EyeTracker
+from EyeTracking import localizeSetup, EyeTracker
 
 
 
