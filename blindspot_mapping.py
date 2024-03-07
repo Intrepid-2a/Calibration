@@ -28,33 +28,16 @@ def doBlindSpotMapping(ID=None):
 
     ## path
     data_path = "../data/mapping/"
+    os.makedirs(data_path, exist_ok=True)
 
     if ID == None:
         ## files
-        expInfo = {'ID':'XXX'}
+        expInfo = {'ID':''}
         dlg = gui.DlgFromDict(expInfo, title='Infos')
         ID = expInfo['ID']
 
-    step = .01
+    step = .25
 
-    # gammaGrid = np.array([  [  0., 135.44739,  2.4203537, np.nan, np.nan, np.nan  ],
-    #                         [  0.,  27.722954, 2.4203537, np.nan, np.nan, np.nan  ],
-    #                         [  0.,  97.999275, 2.4203537, np.nan, np.nan, np.nan  ],
-    #                         [  0.,   9.235623, 2.4203537, np.nan, np.nan, np.nan  ]], dtype=float)
-
-    # resolution = [1920, 1080]
-    # size = [59.8, 33.6]
-    # distance = 50
-
-    # mymonitor = monitors.Monitor(name='temp',
-    #                              distance=distance,
-    #                              width=size[0])
-
-    # mymonitor.setGammaGrid(gammaGrid)
-    # mymonitor.setSizePix(resolution)
-
-
-    # win = visual.Window(resolution, allowGUI=True, monitor=mymonitor, units='deg', fullscr=True, screen=1)
 
     ## colour (eye) parameters
     col_file = open(glob('../data/color/' + ID + "_col_cal*.txt")[-1],'r')
@@ -64,7 +47,7 @@ def doBlindSpotMapping(ID=None):
     col_left  = eval(col_param[3]) # a red color, invisble to the left eye, which has the green-pass filter
     col_right = eval(col_param[5]) # a green color, ...
     # col_both  = [col_left[0], -1, col_right[2]] # Red BLUE glasses
-    col_both  = [col_left[0], col_right[1], -1] # red green glasses
+    col_both  = [col_left[1], col_right[0], -1] # red green glasses
 
 
 
@@ -106,7 +89,7 @@ def doBlindSpotMapping(ID=None):
             # win = visual.Window(resolution, allowGUI=True, monitor=mymonitor, units='deg', viewPos = [0,0], fullscr=True, screen=1)
             point = visual.Circle(cfg['hw']['win'], size = [1,1], pos = [7,-1], fillColor=col_right, lineColor = None, units='deg')
 
-        print(point.size)
+        # print(point.size)
         
 
         cfg['hw']['fusion']['hi'].resetProperties()

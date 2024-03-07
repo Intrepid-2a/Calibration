@@ -34,16 +34,16 @@ def doColorCalibration(ID=None):
 
     ## path
     data_path = "../data/color/"
+    os.makedirs(data_path, exist_ok=True)
 
     if ID == None:
         ## files
         # expInfo = {'ID':'XXX', 'track eyes':['both','left','right'], 'Glasses':['RB', 'RG']}
-        expInfo = {'ID':'XXX'}
+        expInfo = {'ID':''}
         dlg = gui.DlgFromDict(dictionary=expInfo, title='Infos')
         ID = expInfo['ID']
 
     filename = ID.lower() + '_col_cal_'
-
 
     glasses = 'RG' # NO CHOICE !
 
@@ -60,7 +60,7 @@ def doColorCalibration(ID=None):
     #     blue_col   = [-1.0, -1.0,  0.5] 
 
 
-    print(glasses)
+    # print(glasses)
 
     # track_eyes = expInfo['track eyes']
     track_eyes = 'none'    # NO CHOICE !
@@ -96,7 +96,7 @@ def doColorCalibration(ID=None):
 
 
     # filefoder needs to be specified? maybe not for color calibration? no eye-tracking files will be written...
-    setup = localizeSetup(location='toronto', glasses=glasses, trackEyes=trackEyes, filefolder=None) # data path is for the mapping data, not the eye-tracker data!
+    setup = localizeSetup(location='toronto', glasses=glasses, trackEyes=trackEyes, filefolder=None, filename=None) # data path is for the mapping data, not the eye-tracker data!
 
     cfg = {}
     cfg['hw'] = setup
