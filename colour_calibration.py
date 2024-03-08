@@ -30,18 +30,26 @@ from psychopy.hardware import keyboard
 from pyglet.window import key
 
 
-def doColorCalibration(ID=None):
+def doColorCalibration(ID=None, task=None):
 
-    ## path
-    data_path = "../data/color/"
-    os.makedirs(data_path, exist_ok=True)
-
+    expInfo = {}
     if ID == None:
         ## files
-        # expInfo = {'ID':'XXX', 'track eyes':['both','left','right'], 'Glasses':['RB', 'RG']}
-        expInfo = {'ID':''}
-        dlg = gui.DlgFromDict(dictionary=expInfo, title='Infos')
+        expInfo['ID'] = ''
+    if task == None:
+        expInfo['task'] = ['distance', 'area', 'curvature']
+
+    dlg = gui.DlgFromDict(expInfo, title='Infos')
+
+    if ID == None:
         ID = expInfo['ID']
+    if task == None:
+        task = expInfo['task']
+
+    ## path
+    data_path = "../data/%s/color/"%(task)
+    os.makedirs(data_path, exist_ok=True)
+
 
     filename = ID.lower() + '_col_cal_'
 
@@ -60,43 +68,18 @@ def doColorCalibration(ID=None):
     #     blue_col   = [-1.0, -1.0,  0.5] 
 
 
-    # print(glasses)
-
-    # track_eyes = expInfo['track eyes']
     track_eyes = 'none'    # NO CHOICE !
     trackEyes = [False,False]
 
-    # trackEyes = {'both':  [True,  True ],
-    #              'left':  [True,  False],
-    #              'right': [False, True ],
-    #              'none' : [False, False]  }[track_eyes] # if set to none, will use a dummy mouse tracker
-
-
-
-    # # initialise LiveTrack
-    # LiveTrack.Init()
-
-    # # Start LiveTrack raw data streaming (???)
-    # LiveTrack.SetResultsTypeRaw()
-
-    # # Start buffering data to the library
-    # LiveTrack.StartTracking()
-
-    # # left eye tracking only ???
-    # LiveTrack.SetTracking(leftEye=trackLeftEye,rightEye=trackRightEye)
-
-    # # do calibration:
-    # LTcal(cfg=cfg, trackLeftEye=trackLeftEye, trackRightEye=trackRightEye)
-
-    # # # set output to be calibrated output:
-    # LiveTrack.SetResultsTypeCalibrated()
-
-    # # we don't need to do any re-calibration right away:
-    # calibration_triggered = False
-
+    # need location
+    if os.sys.platform == 'linux':
+        location = 'toronto'
+    else:
+        location = 'glasgow'
 
     # filefoder needs to be specified? maybe not for color calibration? no eye-tracking files will be written...
-    setup = localizeSetup(location='toronto', glasses=glasses, trackEyes=trackEyes, filefolder=None, filename=None) # data path is for the mapping data, not the eye-tracker data!
+    # not sending colors to localize setup, since we're still determining them here: use defaults for now!
+    setup = localizeSetup(location=location, glasses=glasses, trackEyes=trackEyes, filefolder=None, filename=None) # data path is for the mapping data, not the eye-tracker data!
 
     cfg = {}
     cfg['hw'] = setup
@@ -105,27 +88,15 @@ def doColorCalibration(ID=None):
     # since these values will be changed and stored in a file, let's make them available locally:
     back_col = cfg['hw']['colors']['back_col']
     red_col  = cfg['hw']['colors']['red_col']
-    blue_col = cfg['hw']['colors']['blue_col']
+    blue_col = cfg['hw']['colors']['blue_col'] # actually green?
 
 
-    # do calibration:
-
-    # print(cfg['hw']['tracker'].storefiles)
-
-    # cfg['hw']['tracker'].initialize()
-    # # print('been there')
-    # cfg['hw']['tracker'].calibrate()
-    # # NOT opening a file here
-    # # print('done that')
-    # cfg['hw']['tracker'].startcollecting()
-    # print('tracking...')
-
+    # open file here:
     x = 1
     while (filename + str(x) + '.txt') in os.listdir(data_path): x += 1
     respFile = open(data_path + filename + str(x) + '.txt','w')
 
-
-
+    # add pyglet keyboard stuff:
     pyg_keyboard = key.KeyStateHandler()
     cfg['hw']['win'].winHandle.push_handlers(pyg_keyboard)
 

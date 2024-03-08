@@ -24,23 +24,30 @@ from glob import glob
 from psychopy.hardware import keyboard
 from pyglet.window import key
 
-def doBlindSpotMapping(ID=None):
-
-    ## path
-    data_path = "../data/mapping/"
-    os.makedirs(data_path, exist_ok=True)
-
+def doBlindSpotMapping(ID=None,task=None):
+    
+    expInfo = {}
     if ID == None:
         ## files
-        expInfo = {'ID':''}
-        dlg = gui.DlgFromDict(expInfo, title='Infos')
+        expInfo['ID'] = ''
+    if task == None:
+        expInfo['task'] = ['distance', 'area', 'curvature']
+
+    dlg = gui.DlgFromDict(expInfo, title='Infos')
+
+    if ID == None:
         ID = expInfo['ID']
+    if task == None:
+        task = expInfo['task']
+
+    ## path
+    data_path = "../data/%s/mapping/"%(task)
+    os.makedirs(data_path, exist_ok=True)
 
     step = .25
 
-
     ## colour (eye) parameters
-    col_file = open(glob('../data/color/' + ID + "_col_cal*.txt")[-1],'r')
+    col_file = open(glob('../data/' + task + '/color/' + ID + "_col_cal*.txt")[-1],'r')
     col_param = col_file.read().replace('\t','\n').split('\n')
     col_file.close()
     col_back  = eval(col_param[1])
@@ -53,15 +60,17 @@ def doBlindSpotMapping(ID=None):
 
     if os.sys.platform == 'linux':
         location = 'toronto'
+        step = .01
     else:
         location = 'glasgow'
+        step = .25
 
 
     glasses = 'RG'
     trackEyes = [True, True]
 
 
-    setup = localizeSetup(location=location, glasses=glasses, trackEyes=trackEyes, filefolder=None) # data path is for the mapping data, not the eye-tracker data!
+    setup = localizeSetup(location=location, glasses=glasses, trackEyes=trackEyes, filefolder=None, filename=None) # data path is for the mapping data, not the eye-tracker data!
 
     cfg = {}
     cfg['hw'] = setup
@@ -154,7 +163,7 @@ def doBlindSpotMapping(ID=None):
         cfg['hw']['win'].getMovieFrame()
         cfg['hw']['win'].saveMovieFrames(data_path + filename + str(x) + '.png')
 
-        respFile.write('position:\t[{:.1f},{:.1f}]\nsize:\t[{:.1f},{:.1f}]'.format(point.pos[0], point.pos[1],  point.size[0], point.size[1]))
+        respFile.write('position:\t[{:.2f},{:.2f}]\nsize:\t[{:.2f},{:.2f}]'.format(point.pos[0], point.pos[1],  point.size[0], point.size[1]))
         respFile.close()
 
 
