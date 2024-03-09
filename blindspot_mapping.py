@@ -24,7 +24,7 @@ from glob import glob
 from psychopy.hardware import keyboard
 from pyglet.window import key
 
-def doBlindSpotMapping(ID=None,task=None):
+def doBlindSpotMapping(ID=None,task=None,hemifield=None):
     
     expInfo = {}
     if ID == None:
@@ -32,6 +32,8 @@ def doBlindSpotMapping(ID=None,task=None):
         expInfo['ID'] = ''
     if task == None:
         expInfo['task'] = ['distance', 'area', 'curvature']
+    if hemifield == None:
+        expInfo['hemifield'] = ['left','right']
 
     dlg = gui.DlgFromDict(expInfo, title='Infos')
 
@@ -39,6 +41,8 @@ def doBlindSpotMapping(ID=None,task=None):
         ID = expInfo['ID']
     if task == None:
         task = expInfo['task']
+    if hemifield == None:
+        hemifield = expInfo['hemifield']
 
     ## path
     data_path = "../data/%s/mapping/"%(task)
@@ -46,31 +50,39 @@ def doBlindSpotMapping(ID=None,task=None):
 
     step = .25
 
-    ## colour (eye) parameters
-    col_file = open(glob('../data/' + task + '/color/' + ID + "_col_cal*.txt")[-1],'r')
+    # col_file = open(glob(main_path + 'mapping_data/' + ID + '_col_cal*.txt')[-1],'r')
+    col_file = open(glob('../data/' + task + '/color/' + ID + '_col_cal*.txt')[-1],'r')
     col_param = col_file.read().replace('\t','\n').split('\n')
     col_file.close()
-    col_back  = eval(col_param[1])
-    col_left  = eval(col_param[3]) # a red color, invisble to the left eye, which has the green-pass filter
-    col_right = eval(col_param[5]) # a green color, ...
-    # col_both  = [col_left[0], -1, col_right[2]] # Red BLUE glasses
-    col_both  = [col_left[1], col_right[0], -1] # red green glasses
+    col_left  = eval(col_param[3])
+    col_right = eval(col_param[5])
+    col_ipsi  = eval(col_param[3]) if hemifield == 'left' else eval(col_param[5]) # left or right
+    col_cont  = eval(col_param[5]) if hemifield == 'left' else eval(col_param[3]) # right or left
+    # col_both = [-0.7, -0.7, -0.7] # now dependent on calibrated colors:
+    col_both = [eval(col_param[3])[1], eval(col_param[5])[0], -1]
+    col_back = [ 0.5, 0.5,  -1.0] # should this come from setupLocalization?
+
+    colors = { 'left'   : col_left, 
+               'right'  : col_right,
+               'both'   : col_both,
+               'ipsi'   : col_ipsi,
+               'cont'   : col_cont,
+               'both'   : col_both  } 
 
 
 
     if os.sys.platform == 'linux':
         location = 'toronto'
-        step = .01
+        step = .02
     else:
         location = 'glasgow'
-        step = .25
 
 
     glasses = 'RG'
     trackEyes = [True, True]
 
 
-    setup = localizeSetup(location=location, glasses=glasses, trackEyes=trackEyes, filefolder=None, filename=None) # data path is for the mapping data, not the eye-tracker data!
+    setup = localizeSetup(location=location, glasses=glasses, trackEyes=trackEyes, filefolder=None, filename=None, colors=colors) # data path is for the mapping data, not the eye-tracker data!
 
     cfg = {}
     cfg['hw'] = setup

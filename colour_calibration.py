@@ -50,6 +50,8 @@ def doColorCalibration(ID=None, task=None):
     data_path = "../data/%s/color/"%(task)
     os.makedirs(data_path, exist_ok=True)
 
+    print(task)
+    print(data_path)
 
     filename = ID.lower() + '_col_cal_'
 
@@ -84,9 +86,8 @@ def doColorCalibration(ID=None, task=None):
     cfg = {}
     cfg['hw'] = setup
 
-
     # since these values will be changed and stored in a file, let's make them available locally:
-    back_col = cfg['hw']['colors']['back_col']
+    back_col = cfg['hw']['colors']['back_col'] # technically, this one will not need to be changed, it should be a constant?
     red_col  = cfg['hw']['colors']['red_col']
     blue_col = cfg['hw']['colors']['blue_col'] # actually green?
 
@@ -108,7 +109,7 @@ def doColorCalibration(ID=None, task=None):
     dot_red_right  = visual.Circle(cfg['hw']['win'], radius = 0.5, pos = [ 7, 7], fillColor = cfg['hw']['colors']['red_col'],  colorSpace = 'rgb', lineColor = None)
     dot_both_right = visual.Circle(cfg['hw']['win'], radius = 0.5, pos = [ 0, 9], fillColor = cfg['hw']['colors']['back_col'], colorSpace = 'rgb', lineColor = None)
 
-    fixation = visual.ShapeStim(cfg['hw']['win'], vertices = ((0, -1), (0, 1), (0,0), (-1, 0), (1, 0)), lineWidth = 5, units = 'deg', size = (1, 1), closeShape = False, lineColor = 'white')
+    # fixation = visual.ShapeStim(cfg['hw']['win'], vertices = ((0, -1), (0, 1), (0,0), (-1, 0), (1, 0)), lineWidth = 5, units = 'deg', size = (1, 1), closeShape = False, lineColor = 'white')
 
 
     step = 0.0015 # RGB color space has 256 values so the step should be 2/256, but that moves too fast
@@ -149,8 +150,6 @@ def doColorCalibration(ID=None, task=None):
 
 
 
-
-
         if allow_calibration:
             if glasses == 'RG':
                 if pyg_keyboard[key.LEFT]:
@@ -174,8 +173,7 @@ def doColorCalibration(ID=None, task=None):
                     blue_col[2] = min( 1, blue_col[2] + step)
                 if pyg_keyboard[key.DOWN]:
                     blue_col[2] = max(-1, blue_col[2] - step)
-            # , trackRightEye
-        #     blue_col[0] = max(-1, blue_col[0] - step)
+
 
         dot_red_left.fillColor   = red_col
         dot_red_right.fillColor  = red_col
@@ -194,7 +192,8 @@ def doColorCalibration(ID=None, task=None):
         if frameN >23:
             frameN = 0
 
-        fixation.draw()
+        # fixation.draw()
+        cfg['hw']['fixation'].draw()
         dot_both_left.draw()
         dot_blue_left.draw()
         dot_red_left.draw()
@@ -231,12 +230,10 @@ def doColorCalibration(ID=None, task=None):
     print("red: " + str(red_col))
     print("blue: " + str(blue_col))
 
-
-    cfg['hw']['win'].close()
-
     # cfg['hw']['tracker'].stopcollecting()
     # cfg['hw']['tracker'].closefile()
     cfg['hw']['tracker'].shutdown()
+    cfg['hw']['win'].close() # should be after tracker shutdown, since tracker may use the window still...
 
 
 
