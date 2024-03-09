@@ -50,9 +50,6 @@ def doColorCalibration(ID=None, task=None):
     data_path = "../data/%s/color/"%(task)
     os.makedirs(data_path, exist_ok=True)
 
-    print(task)
-    print(data_path)
-
     filename = ID.lower() + '_col_cal_'
 
     glasses = 'RG' # NO CHOICE !
