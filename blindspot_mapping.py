@@ -3,10 +3,7 @@
 
 """
 Blind spot mapping
-TWCF IIT vs PP experiment 2a piloting
-Authors: Clement Abbatecola
-    Code version:
-        0.1 # 2022/10/06
+TWCF IIT vs PP experiment 2a
 """
 
 import sys, os
@@ -123,7 +120,9 @@ def doBlindSpotMapping(ID=None,task=None,hemifield=None):
         respFile = open(data_path + filename + str(x) + '.txt','w')
 
         cfg['hw']['win'].mouseVisible = False
-        fixation = visual.ShapeStim(cfg['hw']['win'], vertices = ((0, -2), (0, 2), (0,0), (-2, 0), (2, 0)), lineWidth = 2, units = 'pix', size = (10, 10), closeShape = False, lineColor = 'white')
+        fixation_yes = visual.ShapeStim(cfg['hw']['win'], vertices = ((0, -2), (0, 2), (0,0), (-2, 0), (2, 0)), lineWidth = 2, units = 'pix', size = (10, 10), closeShape = False, lineColor = col_both)
+        fixation_no = visual.ShapeStim(cfg['hw']['win'], vertices = ((0, -2), (0, 2), (0,0), (-2, 0), (2, 0)), lineWidth = 2, units = 'pix', size = (10, 10), closeShape = False, lineColor = col_both, ori = -45)
+        fixation = fixation_yes
         abort = False
 
         fixation.draw()
@@ -147,7 +146,8 @@ def doBlindSpotMapping(ID=None,task=None,hemifield=None):
                     cfg['hw']['tracker'].startcollecting()
 
             if cfg['hw']['tracker'].gazeInFixationWindow():
-
+                fixation = fixation_yes
+                
                 if pyg_keyboard[key.UP]:
                     point.pos += [ 0, step]
                 if pyg_keyboard[key.DOWN]:
@@ -164,7 +164,9 @@ def doBlindSpotMapping(ID=None,task=None,hemifield=None):
                     point.size += [0, step]
                 if pyg_keyboard[key.S]:
                     point.size = [point.size[0], max(step, point.size[1] - step)]
-
+            else:
+                fixation = fixation_no
+                
             # if anything, fusion patterns should be below other stimuli:
             cfg['hw']['fusion']['hi'].draw()
             cfg['hw']['fusion']['lo'].draw()
