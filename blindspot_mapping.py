@@ -66,8 +66,7 @@ def doBlindSpotMapping(ID=None,task=None,hemifield=None):
                'right'  : col_right,
                'both'   : col_both,
                'ipsi'   : col_ipsi,
-               'cont'   : col_cont,
-               'both'   : col_both  } 
+               'cont'   : col_cont  } 
 
 
 
@@ -103,12 +102,12 @@ def doBlindSpotMapping(ID=None,task=None,hemifield=None):
             filename = ID.lower() + '_LH_blindspot_'
             # win = visual.Window([1920,1080],allowGUI=True, monitor='ccni', units='deg', viewPos = [0,0], fullscr = True)
             # win = visual.Window(resolution, allowGUI=True, monitor=mymonitor, units='deg', viewPos = [0,0], fullscr=True, screen=1)
-            point = visual.Circle(cfg['hw']['win'], size = [1,1], pos = [-7,-1], fillColor=col_left, lineColor = None, units='deg')
+            point = visual.Circle(cfg['hw']['win'], size = [1,1], pos = [-7,-1], fillColor=colors['left'], lineColor = None, units='deg')
         else:
             filename = ID.lower() + '_RH_blindspot_'
             # win = visual.Window([1920,1080],allowGUI=True, monitor='ccni', units='deg', viewPos = [0,0], fullscr = True)
             # win = visual.Window(resolution, allowGUI=True, monitor=mymonitor, units='deg', viewPos = [0,0], fullscr=True, screen=1)
-            point = visual.Circle(cfg['hw']['win'], size = [1,1], pos = [7,-1], fillColor=col_right, lineColor = None, units='deg')
+            point = visual.Circle(cfg['hw']['win'], size = [1,1], pos = [7,-1], fillColor=colors['right'], lineColor = None, units='deg')
 
         # print(point.size)
         
