@@ -50,23 +50,23 @@ def doBlindSpotMapping(ID=None,task=None,hemifield=None):
 
     step = .25
 
-    # col_file = open(glob(main_path + 'mapping_data/' + ID + '_col_cal*.txt')[-1],'r')
-    col_file = open(glob('../data/' + task + '/color/' + ID + '_col_cal*.txt')[-1],'r')
-    col_param = col_file.read().replace('\t','\n').split('\n')
-    col_file.close()
-    col_left  = eval(col_param[3])
-    col_right = eval(col_param[5])
-    col_ipsi  = eval(col_param[3]) if hemifield == 'left' else eval(col_param[5]) # left or right
-    col_cont  = eval(col_param[5]) if hemifield == 'left' else eval(col_param[3]) # right or left
-    # col_both = [-0.7, -0.7, -0.7] # now dependent on calibrated colors:
-    col_both = [eval(col_param[3])[1], eval(col_param[5])[0], -1]
-    col_back = [ 0.5, 0.5,  -1.0] # should this come from setupLocalization?
+    # # col_file = open(glob(main_path + 'mapping_data/' + ID + '_col_cal*.txt')[-1],'r')
+    # col_file = open(glob('../data/' + task + '/color/' + ID + '_col_cal*.txt')[-1],'r')
+    # col_param = col_file.read().replace('\t','\n').split('\n')
+    # col_file.close()
+    # col_left  = eval(col_param[3])
+    # col_right = eval(col_param[5])
+    # col_ipsi  = eval(col_param[3]) if hemifield == 'left' else eval(col_param[5]) # left or right
+    # col_cont  = eval(col_param[5]) if hemifield == 'left' else eval(col_param[3]) # right or left
+    # # col_both = [-0.7, -0.7, -0.7] # now dependent on calibrated colors:
+    # col_both = [eval(col_param[3])[1], eval(col_param[5])[0], -1]
+    # col_back = [ 0.5, 0.5,  -1.0] # should this come from setupLocalization?
 
-    colors = { 'left'   : col_left, 
-               'right'  : col_right,
-               'both'   : col_both,
-               'ipsi'   : col_ipsi,
-               'cont'   : col_cont  } 
+    # colors = { 'left'   : col_left, 
+    #            'right'  : col_right,
+    #            'both'   : col_both,
+    #            'ipsi'   : col_ipsi,
+    #            'cont'   : col_cont  } 
 
 
 
@@ -81,7 +81,14 @@ def doBlindSpotMapping(ID=None,task=None,hemifield=None):
     trackEyes = [True, True]
 
 
-    setup = localizeSetup(location=location, glasses=glasses, trackEyes=trackEyes, filefolder=None, filename=None, colors=colors) # data path is for the mapping data, not the eye-tracker data!
+    setup = localizeSetup(location=location, glasses=glasses, trackEyes=trackEyes, filefolder=None, filename=None, colors=colors, task=task) # data path is for the mapping data, not the eye-tracker data!
+
+    colors = setup['colors']
+
+    if hemifield == 'left':
+        colors['ipsi'], colors['contra'] = colors['left'], colors['right']
+    if hemifield == 'right':
+        colors['ipsi'], colors['contra'] = colors['right'], colors['left']
 
     cfg = {}
     cfg['hw'] = setup
