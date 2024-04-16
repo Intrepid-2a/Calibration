@@ -8,7 +8,7 @@ TWCF IIT vs PP experiment 2a
 
 import sys, os
 sys.path.append(os.path.join('..', 'EyeTracking'))
-from EyeTracking import localizeSetup, EyeTracker
+from EyeTracking import localizeSetup, EyeTracker, fusionStim
 
 
 from psychopy import core, visual, gui, data, event, monitors
@@ -23,118 +23,140 @@ from pyglet.window import key
 
 def doBlindSpotMapping(ID=None,task=None,hemifield=None):
     
-    expInfo = {}
-    if ID == None:
-        ## files
-        expInfo['ID'] = ''
-    if task == None:
-        expInfo['task'] = ['distance', 'area', 'curvature']
-    if hemifield == None:
-        expInfo['hemifield'] = ['left','right']
-
-    dlg = gui.DlgFromDict(expInfo, title='Infos')
-
-    if ID == None:
+    # site specific handling
+    if os.sys.platform == 'linux':
+        location = 'toronto'
+    else:
+        location = 'glasgow'
+    
+    if location == 'glasgow':
+        step = .25
+        
+        ## info
+        expInfo = {'ID':'XXX', 'task':['distance', 'area', 'curvature']}
+        dlg = gui.DlgFromDict(expInfo, title='Infos')
         ID = expInfo['ID']
-    if task == None:
         task = expInfo['task']
-    if hemifield == None:
-        hemifield = expInfo['hemifield']
-
+        
+        ## colours
+        col_file = open(glob('../data/' + task + '/color/' + ID + '_col_cal*.txt')[-1],'r')
+        col_param = col_file.read().replace('\t','\n').split('\n')
+        col_file.close()        
+        col_left  = eval(col_param[3])
+        col_right = eval(col_param[5])
+        col_both = [eval(col_param[3])[1], eval(col_param[5])[0], -1] 
+        col_back = [ 0.55,  0.45, -1.00]
+        
+        ## window & elements
+        win = visual.Window([1500,800],allowGUI=True, monitor='ExpMon',screen=1, units='deg', viewPos = [0,0], fullscr = True, color= col_back)
+        win.mouseVisible = False
+        fixation = visual.ShapeStim(win, vertices = ((0, -2), (0, 2), (0,0), (-2, 0), (2, 0)), lineWidth = 4, units = 'pix', size = (10, 10), closeShape = False, lineColor = col_both)
+    
+        hiFusion = fusionStim(win = win, pos = [0, 7], colors = [col_both,col_back])
+        loFusion = fusionStim(win = win, pos = [0,-7], colors = [col_both,col_back])  
+        
+        ## eyetracking
+        colors = {'both'   : col_both,
+                  'back'   : col_back} 
+        tracker = EyeTracker(tracker           = 'eyelink',
+                             trackEyes         = [True, True],
+                             fixationWindow    = 2.0,
+                             minFixDur         = 0.2,
+                             fixTimeout        = 3.0,
+                             psychopyWindow    = win,
+                             filefolder        = None,
+                             filename          = None,
+                             samplemode        = 'average',
+                             calibrationpoints = 5,
+                             colors            = colors)
+                           
+        
+    elif location == 'toronto':
+        step = .02
+        
+        ## info
+        expInfo = {}
+        if ID == None:
+            expInfo['ID'] = ''
+        if task == None:
+            expInfo['task'] = ['distance', 'area', 'curvature']
+    
+        dlg = gui.DlgFromDict(expInfo, title='Infos')
+    
+        if ID == None:
+            ID = expInfo['ID']
+        if task == None:
+            task = expInfo['task']
+            
+        ## colours
+        col_file = open(glob('../data/' + task + '/color/' + ID + '_col_cal*.txt')[-1],'r')
+        col_param = col_file.read().replace('\t','\n').split('\n')
+        col_file.close()
+        col_left  = eval(col_param[3])
+        col_right = eval(col_param[5])
+        col_both = [eval(col_param[3])[1], eval(col_param[5])[0], -1]
+        colors = { 'left'   : col_left, 
+                   'right'  : col_right,
+                   'both'   : col_both}        
+        glasses = 'RG'
+        trackEyes = [True, True]
+        
+        ## get values
+        setup = localizeSetup(location=location, glasses=glasses, trackEyes=trackEyes, filefolder=None, filename=None, colors=colors, task=task) # data path is for the mapping data, not the eye-tracker data!
+        colors = setup['colors']
+        col_left = colors['left']
+        col_right = colors['right']
+        
+        cfg = {}
+        cfg['hw'] = setup
+        
+        win = cfg['hw']['win']
+        tracker = cfg['hw']['tracker']
+        hiFusion = setup['fusion']['hi']
+        loFusion = setup['fusion']['lo']
+        
+    else:
+        raise ValueError("Location should be 'glasgow' or 'toronto', was {}".format(location))
+    
+    ## dynamic fixation
+    fixation_yes = visual.ShapeStim(win, vertices = ((0, -2), (0, 2), (0,0), (-2, 0), (2, 0)), lineWidth = 2, units = 'pix', size = (10, 10), closeShape = False, lineColor = col_both)
+    fixation_no  = visual.ShapeStim(win, vertices = ((0, -2), (0, 2), (0,0), (-2, 0), (2, 0)), lineWidth = 2, units = 'pix', size = (10, 10), closeShape = False, lineColor = col_both, ori = -45)
+    fixation = fixation_yes
+    
     ## path
     data_path = "../data/%s/mapping/"%(task)
     os.makedirs(data_path, exist_ok=True)
 
-    step = .25
-
-    # # col_file = open(glob(main_path + 'mapping_data/' + ID + '_col_cal*.txt')[-1],'r')
-    # col_file = open(glob('../data/' + task + '/color/' + ID + '_col_cal*.txt')[-1],'r')
-    # col_param = col_file.read().replace('\t','\n').split('\n')
-    # col_file.close()
-    # col_left  = eval(col_param[3])
-    # col_right = eval(col_param[5])
-    # col_ipsi  = eval(col_param[3]) if hemifield == 'left' else eval(col_param[5]) # left or right
-    # col_cont  = eval(col_param[5]) if hemifield == 'left' else eval(col_param[3]) # right or left
-    # # col_both = [-0.7, -0.7, -0.7] # now dependent on calibrated colors:
-    # col_both = [eval(col_param[3])[1], eval(col_param[5])[0], -1]
-    # col_back = [ 0.5, 0.5,  -1.0] # should this come from setupLocalization?
-
-    # colors = { 'left'   : col_left, 
-    #            'right'  : col_right,
-    #            'both'   : col_both,
-    #            'ipsi'   : col_ipsi,
-    #            'cont'   : col_cont  } 
-
-
-
-    if os.sys.platform == 'linux':
-        location = 'toronto'
-        step = .02
-    else:
-        location = 'glasgow'
-
-
-    glasses = 'RG'
-    trackEyes = [True, True]
-
-
-    setup = localizeSetup(location=location, glasses=glasses, trackEyes=trackEyes, filefolder=None, filename=None, colors=colors, task=task) # data path is for the mapping data, not the eye-tracker data!
-
-    colors = setup['colors']
-
-    if hemifield == 'left':
-        colors['ipsi'], colors['contra'] = colors['left'], colors['right']
-    if hemifield == 'right':
-        colors['ipsi'], colors['contra'] = colors['right'], colors['left']
-
-    cfg = {}
-    cfg['hw'] = setup
-
-
+    ## pyglet keyboard
     pyg_keyboard = key.KeyStateHandler()
-    cfg['hw']['win'].winHandle.push_handlers(pyg_keyboard)
+    win.winHandle.push_handlers(pyg_keyboard)
+    
+    ## start tracker
+    tracker.initialize()
+    tracker.calibrate()
+    tracker.startcollecting()
 
-    cfg['hw']['tracker'].initialize()
-    cfg['hw']['tracker'].calibrate()
-    cfg['hw']['tracker'].startcollecting()
-    # print('tracking...')
-
-
+    
+    ## files/task handling through hemifields
     for hemifield in ['left', 'right']:
 
         if hemifield == 'left':
             filename = ID.lower() + '_LH_blindspot_'
-            # win = visual.Window([1920,1080],allowGUI=True, monitor='ccni', units='deg', viewPos = [0,0], fullscr = True)
-            # win = visual.Window(resolution, allowGUI=True, monitor=mymonitor, units='deg', viewPos = [0,0], fullscr=True, screen=1)
-            point = visual.Circle(cfg['hw']['win'], size = [1,1], pos = [-7,-1], fillColor=colors['left'], lineColor = None, units='deg')
+            point = visual.Circle(win, size = [1,1], pos = [-7,-1], fillColor=col_left, lineColor = None, units='deg')
         else:
             filename = ID.lower() + '_RH_blindspot_'
-            # win = visual.Window([1920,1080],allowGUI=True, monitor='ccni', units='deg', viewPos = [0,0], fullscr = True)
-            # win = visual.Window(resolution, allowGUI=True, monitor=mymonitor, units='deg', viewPos = [0,0], fullscr=True, screen=1)
-            point = visual.Circle(cfg['hw']['win'], size = [1,1], pos = [7,-1], fillColor=colors['right'], lineColor = None, units='deg')
+            point = visual.Circle(win, size = [1,1], pos = [7,-1], fillColor=col_right, lineColor = None, units='deg')
 
-        # print(point.size)
-        
+        hiFusion.resetProperties()
+        loFusion.resetProperties()
 
-        cfg['hw']['fusion']['hi'].resetProperties()
-        cfg['hw']['fusion']['lo'].resetProperties()
-
-
-        # make a new file for the participant:
+        ## make a new file for the participant:
         x = 1
         while (filename + str(x) + '.txt') in os.listdir(data_path): x += 1
         respFile = open(data_path + filename + str(x) + '.txt','w')
 
-        cfg['hw']['win'].mouseVisible = False
-        fixation_yes = visual.ShapeStim(cfg['hw']['win'], vertices = ((0, -2), (0, 2), (0,0), (-2, 0), (2, 0)), lineWidth = 2, units = 'pix', size = (10, 10), closeShape = False, lineColor = col_both)
-        fixation_no = visual.ShapeStim(cfg['hw']['win'], vertices = ((0, -2), (0, 2), (0,0), (-2, 0), (2, 0)), lineWidth = 2, units = 'pix', size = (10, 10), closeShape = False, lineColor = col_both, ori = -45)
-        fixation = fixation_yes
+        ## main loop
         abort = False
-
-        fixation.draw()
-        point.draw()
-        cfg['hw']['win'].flip()
-
         while 1:
             k = event.getKeys(['up', 'down', 'left', 'right', 'q', 'w', 'a', 's', 'space', 'escape', '0'])
 
@@ -147,11 +169,9 @@ def doBlindSpotMapping(ID=None,task=None,hemifield=None):
                     break
 
                 if '0' in k:
-                    cfg['hw']['tracker'].stopcollecting() # do we even have to stop/start collecting?
-                    cfg['hw']['tracker'].calibrate()
-                    cfg['hw']['tracker'].startcollecting()
+                    tracker.calibrate()
 
-            if cfg['hw']['tracker'].gazeInFixationWindow():
+            if tracker.gazeInFixationWindow():
                 fixation = fixation_yes
                 
                 if pyg_keyboard[key.UP]:
@@ -172,22 +192,24 @@ def doBlindSpotMapping(ID=None,task=None,hemifield=None):
                     point.size = [point.size[0], max(step, point.size[1] - step)]
             else:
                 fixation = fixation_no
-                
-            # if anything, fusion patterns should be below other stimuli:
-            cfg['hw']['fusion']['hi'].draw()
-            cfg['hw']['fusion']['lo'].draw()
+            
+            
+            hiFusion.draw()
+            loFusion.draw()
             fixation.draw()
             point.draw()
-            cfg['hw']['win'].flip()
-
-        cfg['hw']['win'].getMovieFrame()
-        cfg['hw']['win'].saveMovieFrames(data_path + filename + str(x) + '.png')
+            win.flip()
+        
+        ## data saving
+        win.getMovieFrame()
+        win.saveMovieFrames(data_path + filename + str(x) + '.png')
 
         respFile.write('position:\t[{:.2f},{:.2f}]\nsize:\t[{:.2f},{:.2f}]'.format(point.pos[0], point.pos[1],  point.size[0], point.size[1]))
         respFile.close()
 
-
-    cfg['hw']['tracker'].stopcollecting()
-    # close files here? there shouldn't be any...
-    cfg['hw']['tracker'].shutdown()
-    cfg['hw']['win'].close()
+    ## wrapping up
+    tracker.shutdown()
+    win.close()
+    
+if __name__ == "__main__":
+    doBlindSpotMapping()
