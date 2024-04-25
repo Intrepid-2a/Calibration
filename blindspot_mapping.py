@@ -132,7 +132,7 @@ def doBlindSpotMapping(ID=None,task=None,hemifield=None):
     win.winHandle.push_handlers(pyg_keyboard)
     
     ## start tracker
-    tracker.initialize()
+    tracker.initialize(calibrationScale=(0.35, 0.35))
     tracker.calibrate()
     tracker.startcollecting()
 
@@ -158,7 +158,7 @@ def doBlindSpotMapping(ID=None,task=None,hemifield=None):
         ## main loop
         abort = False
         while 1:
-            k = event.getKeys(['up', 'down', 'left', 'right', 'q', 'w', 'a', 's', 'space', 'escape', '0'])
+            k = event.getKeys(['space', 'escape', '0'])
 
             if k:
                 if 'escape' in k:
@@ -173,23 +173,42 @@ def doBlindSpotMapping(ID=None,task=None,hemifield=None):
 
             if tracker.gazeInFixationWindow():
                 fixation = fixation_yes
-                
-                if pyg_keyboard[key.UP]:
-                    point.pos += [ 0, step]
-                if pyg_keyboard[key.DOWN]:
-                    point.pos += [ 0,-step]
-                if pyg_keyboard[key.LEFT]:
-                    point.pos += [-step, 0]
-                if pyg_keyboard[key.RIGHT]:
-                    point.pos += [ step, 0]
-                if pyg_keyboard[key.Q]:
-                    point.size += [step,0]
-                if pyg_keyboard[key.W]:
-                    point.size = [max(step, point.size[0] - step), point.size[1]]
-                if pyg_keyboard[key.A]:
-                    point.size += [0, step]
-                if pyg_keyboard[key.S]:
-                    point.size = [point.size[0], max(step, point.size[1] - step)]
+                if pyg_keyboard[key.LCTRL]:
+                    k = event.getKeys(['up', 'down', 'left', 'right', 'q', 'w', 'a', 's'])
+                    if k:
+                        if 'up' in k:
+                            point.pos += [ 0, step]
+                        if 'down' in k:
+                            point.pos += [ 0,-step]
+                        if 'left' in k:
+                            point.pos += [-step, 0]
+                        if 'right' in k:
+                            point.pos += [ step, 0]
+                        if 'q' in k:
+                            point.size += [step,0]
+                        if 'w' in k:
+                            point.size = [max(step, point.size[0] - step), point.size[1]]
+                        if 'a' in k:
+                            point.size += [0, step]
+                        if 's' in k:
+                            point.size = [point.size[0], max(step, point.size[1] - step)]
+                else:
+                    if pyg_keyboard[key.UP]:
+                        point.pos += [ 0, step]
+                    if pyg_keyboard[key.DOWN]:
+                        point.pos += [ 0,-step]
+                    if pyg_keyboard[key.LEFT]:
+                        point.pos += [-step, 0]
+                    if pyg_keyboard[key.RIGHT]:
+                        point.pos += [ step, 0]
+                    if pyg_keyboard[key.Q]:
+                        point.size += [step,0]
+                    if pyg_keyboard[key.W]:
+                        point.size = [max(step, point.size[0] - step), point.size[1]]
+                    if pyg_keyboard[key.A]:
+                        point.size += [0, step]
+                    if pyg_keyboard[key.S]:
+                        point.size = [point.size[0], max(step, point.size[1] - step)]
             else:
                 fixation = fixation_no
             
