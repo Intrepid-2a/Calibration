@@ -33,13 +33,17 @@ from pyglet.window import key
 def doColorCalibration(ID=None, task=None):
 
     expInfo = {}
+    askQuestions = False
     if ID == None:
         ## files
         expInfo['ID'] = ''
+        askQuestions = True
     if task == None:
         expInfo['task'] = ['distance', 'area', 'curvature']
+        askQuestions = True
 
-    dlg = gui.DlgFromDict(expInfo, title='Infos')
+    if askQuestions:
+        dlg = gui.DlgFromDict(expInfo, title='Infos')
 
     if ID == None:
         ID = expInfo['ID']
@@ -84,10 +88,14 @@ def doColorCalibration(ID=None, task=None):
     cfg['hw'] = setup
 
     # since these values will be changed and stored in a file, let's make them available locally:
-    back_col = cfg['hw']['colors']['back_col'] # technically, this one will not need to be changed, it should be a constant?
-    red_col  = cfg['hw']['colors']['red_col']
-    blue_col = cfg['hw']['colors']['blue_col'] # actually green?
+    back_col = cfg['hw']['colors']['back'] # technically, this one will not need to be changed, it should be a constant?
+    red_col  = cfg['hw']['colors']['red']
+    blue_col = cfg['hw']['colors']['blue'] # actually green?
 
+    print(cfg['hw']['colors'])
+
+    # print(cfg['hw']['win'].monitor.getGammaGrid())
+    # print(cfg['hw']['win'].color)
 
     # open file here:
     x = 1
@@ -98,13 +106,13 @@ def doColorCalibration(ID=None, task=None):
     pyg_keyboard = key.KeyStateHandler()
     cfg['hw']['win'].winHandle.push_handlers(pyg_keyboard)
 
-    dot_blue_left  = visual.Circle(cfg['hw']['win'], radius = 0.5, pos = [-7, 7], fillColor = cfg['hw']['colors']['blue_col'], colorSpace = 'rgb', lineColor = None)
-    dot_red_left   = visual.Circle(cfg['hw']['win'], radius = 0.5, pos = [-7,-7], fillColor = cfg['hw']['colors']['red_col'],  colorSpace = 'rgb', lineColor = None)
-    dot_both_left  = visual.Circle(cfg['hw']['win'], radius = 0.5, pos = [ 0,-9], fillColor = cfg['hw']['colors']['back_col'], colorSpace = 'rgb', lineColor = None)
+    dot_blue_left  = visual.Circle(cfg['hw']['win'], radius = 2.5, pos = [-7, 7], fillColor = cfg['hw']['colors']['blue'], colorSpace = 'rgb', lineColor = None)
+    dot_red_left   = visual.Circle(cfg['hw']['win'], radius = 2.5, pos = [-7,-7], fillColor = cfg['hw']['colors']['red'],  colorSpace = 'rgb', lineColor = None)
+    dot_both_left  = visual.Circle(cfg['hw']['win'], radius = 2.5, pos = [ 0,-9], fillColor = cfg['hw']['colors']['back'], colorSpace = 'rgb', lineColor = None)
 
-    dot_blue_right = visual.Circle(cfg['hw']['win'], radius = 0.5, pos = [ 7,-7], fillColor = cfg['hw']['colors']['blue_col'], colorSpace = 'rgb', lineColor = None)
-    dot_red_right  = visual.Circle(cfg['hw']['win'], radius = 0.5, pos = [ 7, 7], fillColor = cfg['hw']['colors']['red_col'],  colorSpace = 'rgb', lineColor = None)
-    dot_both_right = visual.Circle(cfg['hw']['win'], radius = 0.5, pos = [ 0, 9], fillColor = cfg['hw']['colors']['back_col'], colorSpace = 'rgb', lineColor = None)
+    dot_blue_right = visual.Circle(cfg['hw']['win'], radius = 2.5, pos = [ 7,-7], fillColor = cfg['hw']['colors']['blue'], colorSpace = 'rgb', lineColor = None)
+    dot_red_right  = visual.Circle(cfg['hw']['win'], radius = 2.5, pos = [ 7, 7], fillColor = cfg['hw']['colors']['red'],  colorSpace = 'rgb', lineColor = None)
+    dot_both_right = visual.Circle(cfg['hw']['win'], radius = 2.5, pos = [ 0, 9], fillColor = cfg['hw']['colors']['back'], colorSpace = 'rgb', lineColor = None)
 
     # fixation = visual.ShapeStim(cfg['hw']['win'], vertices = ((0, -1), (0, 1), (0,0), (-1, 0), (1, 0)), lineWidth = 5, units = 'deg', size = (1, 1), closeShape = False, lineColor = 'white')
 
@@ -191,10 +199,10 @@ def doColorCalibration(ID=None, task=None):
 
         # fixation.draw()
         cfg['hw']['fixation'].draw()
-        dot_both_left.draw()
+        # dot_both_left.draw()
         dot_blue_left.draw()
         dot_red_left.draw()
-        dot_both_right.draw()
+        # dot_both_right.draw()
         dot_blue_right.draw()
         dot_red_right.draw()
 

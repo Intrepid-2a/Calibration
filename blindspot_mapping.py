@@ -21,25 +21,29 @@ from glob import glob
 from psychopy.hardware import keyboard
 from pyglet.window import key
 
-def doBlindSpotMapping(ID=None,task=None,hemifield=None):
+def doBlindSpotMapping(ID=None,task=None):
     
+    askQuestions = False
     expInfo = {}
     if ID == None:
         ## files
         expInfo['ID'] = ''
+        askQuestions = True
     if task == None:
         expInfo['task'] = ['distance', 'area', 'curvature']
-    if hemifield == None:
-        expInfo['hemifield'] = ['left','right']
+        askQuestions = True
+    # if hemifield == None:
+    #     expInfo['hemifield'] = ['left','right']
 
-    dlg = gui.DlgFromDict(expInfo, title='Infos')
+    if askQuestions:
+        dlg = gui.DlgFromDict(expInfo, title='Infos')
 
     if ID == None:
         ID = expInfo['ID']
     if task == None:
         task = expInfo['task']
-    if hemifield == None:
-        hemifield = expInfo['hemifield']
+    # if hemifield == None:
+    #     hemifield = expInfo['hemifield']
 
     ## path
     data_path = "../data/%s/mapping/"%(task)
@@ -78,56 +82,69 @@ def doBlindSpotMapping(ID=None,task=None,hemifield=None):
     trackEyes = [True, True]
 
 
-    setup = localizeSetup(location=location, glasses=glasses, trackEyes=trackEyes, filefolder=None, filename=None, colors=colors, task=task) # data path is for the mapping data, not the eye-tracker data!
+    setup = localizeSetup(location=location, glasses=glasses, trackEyes=trackEyes, filefolder=None, filename=None, task=task, ID=ID) # data path is for the mapping data, not the eye-tracker data!
 
     colors = setup['colors']
 
-    if hemifield == 'left':
-        colors['ipsi'], colors['contra'] = colors['left'], colors['right']
-    if hemifield == 'right':
-        colors['ipsi'], colors['contra'] = colors['right'], colors['left']
+    print(colors)
+
+    # if hemifield == 'left':
+    #     colors['ipsi'], colors['contra'] = colors['left'], colors['right']
+    # if hemifield == 'right':
+    #     colors['ipsi'], colors['contra'] = colors['right'], colors['left']
 
     cfg = {}
     cfg['hw'] = setup
 
 
+    # print(cfg['hw']['win'].monitor.getGammaGrid())
+    # print(cfg['hw']['win'].color)
+
+
     pyg_keyboard = key.KeyStateHandler()
     cfg['hw']['win'].winHandle.push_handlers(pyg_keyboard)
+
 
     cfg['hw']['tracker'].initialize()
     cfg['hw']['tracker'].calibrate()
     cfg['hw']['tracker'].startcollecting()
     # print('tracking...')
 
+    # testX = visual.TextStim(cfg['hw']['win'], 'X', height = 1,wrapWidth=30, color = 'black', pos=[-3,-3])
+
 
     for hemifield in ['left', 'right']:
 
         if hemifield == 'left':
+            colors['ipsi'], colors['contra'] = colors['left'], colors['right']
             filename = ID.lower() + '_LH_blindspot_'
             # win = visual.Window([1920,1080],allowGUI=True, monitor='ccni', units='deg', viewPos = [0,0], fullscr = True)
             # win = visual.Window(resolution, allowGUI=True, monitor=mymonitor, units='deg', viewPos = [0,0], fullscr=True, screen=1)
             point = visual.Circle(cfg['hw']['win'], size = [1,1], pos = [-7,-1], fillColor=colors['left'], lineColor = None, units='deg')
         else:
+            colors['ipsi'], colors['contra'] = colors['right'], colors['left']
             filename = ID.lower() + '_RH_blindspot_'
             # win = visual.Window([1920,1080],allowGUI=True, monitor='ccni', units='deg', viewPos = [0,0], fullscr = True)
             # win = visual.Window(resolution, allowGUI=True, monitor=mymonitor, units='deg', viewPos = [0,0], fullscr=True, screen=1)
             point = visual.Circle(cfg['hw']['win'], size = [1,1], pos = [7,-1], fillColor=colors['right'], lineColor = None, units='deg')
 
+        # point.fillColor = [-1,-1,-1]
         # print(point.size)
         
+
 
         cfg['hw']['fusion']['hi'].resetProperties()
         cfg['hw']['fusion']['lo'].resetProperties()
 
 
-        # make a new file for the participant:
+        # check what the file should be for the participant:
         x = 1
         while (filename + str(x) + '.txt') in os.listdir(data_path): x += 1
-        respFile = open(data_path + filename + str(x) + '.txt','w')
+        
 
         cfg['hw']['win'].mouseVisible = False
-        fixation_yes = visual.ShapeStim(cfg['hw']['win'], vertices = ((0, -2), (0, 2), (0,0), (-2, 0), (2, 0)), lineWidth = 2, units = 'pix', size = (10, 10), closeShape = False, lineColor = col_both)
-        fixation_no = visual.ShapeStim(cfg['hw']['win'], vertices = ((0, -2), (0, 2), (0,0), (-2, 0), (2, 0)), lineWidth = 2, units = 'pix', size = (10, 10), closeShape = False, lineColor = col_both, ori = -45)
+        fixation_yes = visual.ShapeStim(cfg['hw']['win'], vertices = ((0, -2), (0, 2), (0,0), (-2, 0), (2, 0)), lineWidth = 2, units = 'pix', size = (10, 10), closeShape = False, lineColor = colors['both'])
+        fixation_no = visual.ShapeStim(cfg['hw']['win'], vertices = ((0, -2), (0, 2), (0,0), (-2, 0), (2, 0)), lineWidth = 2, units = 'pix', size = (10, 10), closeShape = False, lineColor = colors['both'], ori = -45)
         fixation = fixation_yes
         abort = False
 
@@ -180,9 +197,12 @@ def doBlindSpotMapping(ID=None,task=None,hemifield=None):
             point.draw()
             cfg['hw']['win'].flip()
 
+            # print(point.pos)
+
         cfg['hw']['win'].getMovieFrame()
         cfg['hw']['win'].saveMovieFrames(data_path + filename + str(x) + '.png')
 
+        respFile = open(data_path + filename + str(x) + '.txt','w')
         respFile.write('position:\t[{:.2f},{:.2f}]\nsize:\t[{:.2f},{:.2f}]'.format(point.pos[0], point.pos[1],  point.size[0], point.size[1]))
         respFile.close()
 
